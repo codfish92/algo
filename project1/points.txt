@@ -1,0 +1,4 @@
+This is doc to hold the sample points used to test neareast neighbor algo and that exahustive functions properly
+the set of points used are
+6 points
+{(0,0) (2,1) (3,4) (5,3) (7,5) (8, 1)}
