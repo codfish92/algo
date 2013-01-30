@@ -3,13 +3,16 @@ import os
 import itertools
 import math
 import random
-
+import time
 
 class Point :
 	def __init__(self, x, y):
 		self.x = x
 		self.y = y
 	def __str__(self):
+		return "(" + self.x + ", " + self.y + ")"
+	
+	def __repr__(self):
 		return "(" + self.x + ", " + self.y + ")"
 	
 	def getX(self):
@@ -26,11 +29,15 @@ sampleSet = [Point(0,0), Point(2,1), Point(3,4), Point(5,3), Point(7,5), Point(8
 #returns a list in folowing fomat [path, distance, timeFromClock]
 def exhaustive(setOfPoints, n):
 	itertoolsPermutations=itertools.permutations(setOfPoints, n)
-	return doExhaustive(itertoolsPermutations, n)
-
+#dont have to time the generation of permutations
+	t0 = time.time()
+	results = doExhaustive(itertoolsPermutations, n)
+	timeTaken = time.time() - t0 
+	return [results[0], results[1], timeTaken]
 def doExhaustive(permutations, n):
 	shortestDistance = 99999999999999 #relativly large num
 	shortestPath = None
+	numPermutation = 0
 	try:
 		while True:
 			currentPath = permutations.next()
@@ -41,6 +48,8 @@ def doExhaustive(permutations, n):
 			if shortestDistance > distance:
 				shortestDistance = distance
 				shortestPath = currentPath
+			numPermutation = numPermutation + 1
+			print "permutation %d done" % (numPermutation)
 
 	except StopIteration:
 		print "we have stoped" #will remove later
@@ -64,6 +73,12 @@ in the case of tie in terms of who is closer, it will pick the point with the lo
 
 #returns a list in folowing fomat [path, distance, timeFromClock]
 def nearest(setOfPoints, n):
+	t0 = time.time()
+	results = doNearest(setOfPoints, n)
+	timeTaken = time.time() - t0
+	return [results[0], results[1], timeTaken]
+
+def doNearest(setOfPoints, n):
 	path = setOfPoints #this is the set of all points used
 	distance = 0 #distance is 0 at start
 	start = random.randint(0, n-1) #picks a random point to start in the set, this causes less pre-iterations for better results in the average case, but potentially leads to the worst case scenario
@@ -96,35 +111,49 @@ def nearest(setOfPoints, n):
 
 
 def loadInputs():
-	numberOfPoints = random.randint(5, 20) # should provide a sufficent number of points to analyize, but not cause a lot of problems on the upperbound of exhausive search
+	numberOfPoints = 1000 # should provide a sufficent number of points to analyize, but not cause a lot of problems on the upperbound of exhausive search
 	listOfXValues = generateRandomPoints(numberOfPoints)# will gen the x values of the points
 	listOfYValues = generateRandomPoints(numberOfPoints)# will gen the y values of the points
 	listOfPoints = []
-	for i in range(n):
+	for i in range(numberOfPoints):
 		listOfPoints.append(Point(listOfXValues[i], listOfYValues[i]))
 	removeDuplicates(listOfPoints)
 	numberOfPoints = len(listOfPoints)#duplicates may have been removed, lowering number of points from before
-	nearestResult = nearest(listOfPoints, numberOfPoints)
-	exhaustiveResult = exhaustive(listOfPoints, numberOfPoints)
-
+	nearestResult = nearest(listOfPoints, numberOfPoints)#due to the way nearest will work, it ends up removing from list, rather than timing the list copy, it is just done last
+	outputLog = open("log.txt", "a")
+	outputLog.write("test\n\n")
+	outputLog.write("using %d points\n" % (numberOfPoints))
+	outputLog.write("nearest\n")
+	outputLog.write("%f\n" % (nearestResult[1]))
+	outputLog.write("time\n")
+	outputLog.write("%f"% (nearestResult[2]))
+	outputLog.write("\n\n")
 #genrates random ints between 0 and 30
 def generateRandomPoints(n):
 	listOfVals = []
 	numVals = n
 	while numVals > 0:
-		listOfVals.append(random.randint(0, 30))
+		listOfVals.append(random.randint(0, 100))
 		numVals = numVals - 1
 	return listOfVals
 
 #removes duplicate points 
 def removeDuplicates(listOfPoints):
+	print "the number of points is %d" %( len(listOfPoints))
+	numPoints = len(listOfPoints)
+	indexToDelete = []
 	listOfPotential = [] #contains list of potential duplicates
-	for i in range(len(listOfPoints)): # will find all points with the same x value
-		for j in range(i+1, len(listOfPoints)):
+	for i in range(numPoints-1): # will find all points with the same x value
+		for j in range(i+1, numPoints):
 			if listOfPoints[i].getX() == listOfPoints[j].getX():
 				if listOfPoints[i].getY() == listOfPoints[j].getY():
 					if i != j: #just a check to make sure im not comparing the same index
-						del listOfPoints[j] #remove duplicate point
+						indexToDelete.append(j)
+	print indexToDelete
+	n=0
+	for index in indexToDelete:
+		del listOfPoints[index-n]
+		n = n + 1
 	return listOfPoints
 
 #func used to for testing only, uses a set group of points to test accuracy
@@ -146,4 +175,4 @@ def test():
 	
 
 #loadInputs() this func will be used on final version, sample set is used turing test
-test()
+loadInputs()
