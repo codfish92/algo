@@ -48,11 +48,8 @@ def doExhaustive(permutations, n):
 			if shortestDistance > distance:
 				shortestDistance = distance
 				shortestPath = currentPath
-			numPermutation = numPermutation + 1
-			print "permutation %d done" % (numPermutation)
 
 	except StopIteration:
-		print "we have stoped" #will remove later
 		return [shortestPath, shortestDistance]
 
 
@@ -174,5 +171,44 @@ def test():
 	print exhaustiveResult[1]
 	
 
+def loadFileInput():
+	print "loading from file " + sys.argv[1]
+	inputFileName = sys.argv[1]
+	try:
+		fileStream = open(inputFileName, "r")
+		linesFromFile = fileStream.readlines()
+		numberOfPoints = int(linesFromFile[0])
+		listOfPoints = []
+		for i in range(1, len(linesFromFile)-1):
+			pointData = linesFromFile[i] 
+			pointX = pointData[0:pointData.find(" ")] # capture everything before the space
+			pointY = pointData[pointData.find(" ")+1:-1] # capture everything after the space
+			print "pointX is ;" + pointX + "; pointY is ;" + pointY + ";"
+			listOfPoints.append(Point(int(pointX), int(pointY)))
+		if numberOfPoints != 6: #since the exhaustive should not be done with the large number one
+			outputNearest = nearest(listOfPoints, numberOfPoints)
+			writeToLog(outputNearest, 1)
+		else:
+			outputExhaustive = exhaustive(listOfPoints, numberOfPoints)
+			outputNearest = nearest(listOfPoints, numberOfPoints)
+			writeToLog(outputExhaustive, 0)
+			writeToLog(outputNearest, 1)
+	except IOError as error:
+		print "error opening the file " + sys.argv[1]
+		print error
+
+def writeToLog(outputLines, flag):
+	outputLog = open("log.txt", "a")
+	if flag == 0:
+		outputLog.write("Exhaustive result\n")
+	else:
+		outputLog.write("Nearest result\n")
+	outputLog.write("The path used was \n")
+	for i in range(len(outputLines[0])):
+		outputLog.write("(%i, %i) " % (outputLines[0][i].getX(), outputLines[0][i].getY()))
+	outputLog.write("\nThe total distance was \n")
+	outputLog.write("%f\n" % (outputLines[1]))
+	outputLog.write("The time it took for the algorithm to finish was \n")
+	outputLog.write("%f\n\n\n" % (outputLines[2]))
 #loadInputs() this func will be used on final version, sample set is used turing test
-loadInputs()
+loadFileInput()
